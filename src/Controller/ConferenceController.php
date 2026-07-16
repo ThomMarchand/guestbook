@@ -8,6 +8,7 @@ use App\Repository\CommentRepository;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 use Twig\Environment;
 
@@ -25,11 +26,17 @@ final class ConferenceController extends AbstractController
     public function show(
         Environment $twig,
         #[MapEntity] Conference $conference,
-        CommentRepository $commentRepository
+        CommentRepository $commentRepository,
+        #[MapQueryParameter(options: ['min_range' => 0])] int $offset = 0
     ): Response {
+        $paginator = $commentRepository->getCommentPaginator($conference, $offset);
+        dump($offset);
+
         return new Response($twig->render('conference/show.html.twig', [
             'conference' => $conference,
-            'comments' => $commentRepository->findBy(['conference' => $conference], ['createdAt' => 'DESC'])
+            'comments' => $paginator,
+            'previous' => $offset - CommentRepository::COMMENTS_PER_PAGE,
+            'next' => min(count($paginator), $offset + CommentRepository::COMMENTS_PER_PAGE)
         ]));
     }
 }
