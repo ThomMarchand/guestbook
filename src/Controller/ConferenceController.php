@@ -2,22 +2,34 @@
 
 namespace App\Controller;
 
+use App\Entity\Conference;
+use App\Repository\ConferenceRepository;
+use App\Repository\CommentRepository;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Twig\Environment;
 
 final class ConferenceController extends AbstractController
 {
     #[Route('/', name: 'homepage')]
-    public function index(): Response
+    public function index(Environment $twig, ConferenceRepository $conferenceRepository): Response
     {
-        return new Response(<<<EOF
-            <html>
-                <body>
-                    <img src="/images/website-under-construction-image-6.gif" alt="Symfony!">
+        return new Response($twig->render('conference/index.html.twig', [
+            'conferences' => $conferenceRepository->findAll(),
+        ]));
+    }
 
-                </body>
-            </html>
-        EOF);
+    #[Route('/conference/{id}', name: 'conference')]
+    public function show(
+        Environment $twig,
+        #[MapEntity] Conference $conference,
+        CommentRepository $commentRepository
+    ): Response {
+        return new Response($twig->render('conference/show.html.twig', [
+            'conference' => $conference,
+            'comments' => $commentRepository->findBy(['conference' => $conference], ['createdAt' => 'DESC'])
+        ]));
     }
 }
