@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Conference;
 use App\Repository\ConferenceRepository;
 use App\Repository\CommentRepository;
-use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
@@ -21,9 +20,9 @@ final class ConferenceController extends AbstractController
         ]);
     }
 
-    #[Route('/conference/{id}', name: 'conference')]
+    #[Route('/conference/{slug:conference}', name: 'conference')]
     public function show(
-        #[MapEntity] Conference $conference,
+        Conference $conference,
         CommentRepository $commentRepository,
         #[MapQueryParameter(options: ['min_range' => 0])] int $offset = 0
     ): Response {
