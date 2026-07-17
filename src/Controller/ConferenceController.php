@@ -9,6 +9,7 @@ use App\Repository\ConferenceRepository;
 use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
@@ -33,6 +34,7 @@ final class ConferenceController extends AbstractController
         Request $request,
         Conference $conference,
         CommentRepository $commentRepository,
+        #[Autowire('%photo_dir%')] string $photoDir,
         #[MapQueryParameter(options: ['min_range' => 0])] int $offset = 0
     ): Response {
         $comment = new Comment();
@@ -41,6 +43,12 @@ final class ConferenceController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $comment->setConference($conference);
+
+            if ($photo = $form['photoFilename']->getData()) {
+                $filename = bin2hex(random_bytes(6)) . '.' . $photo->guessExtension();
+                $photo->move($photoDir, $filename);
+                $comment->setPhotoFilename($filename);
+            }
 
             $this->entityManager->persist($comment);
             $this->entityManager->flush();
