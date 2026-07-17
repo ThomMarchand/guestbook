@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Attribute\RateLimit;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class ConferenceController extends AbstractController
@@ -29,6 +30,7 @@ final class ConferenceController extends AbstractController
         ]);
     }
 
+    #[RateLimit('comment_submission', methods: ['POST'])]
     #[Route('/conference/{slug:conference}', name: 'conference')]
     public function show(
         Request $request,
